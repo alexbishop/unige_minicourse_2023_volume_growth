@@ -1,0 +1,801 @@
+\documentclass[11pt,a4paper,reqno]{amsart}
+
+% localisation settings
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[australian]{babel}
+\usepackage{csquotes}
+
+\usepackage{microtype}
+
+\usepackage{fullpage}
+%\usepackage{parskip}
+
+\usepackage{enumitem}
+
+\usepackage{amsfonts,amsmath,amsthm,amssymb,mathtools}
+\usepackage{thmtools, thm-restate}
+
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\hypersetup{%
+	% link colours
+	colorlinks=true,
+	linkcolor = darkblue,
+	anchorcolor = darkblue,
+	citecolor = darkblue,
+	filecolor = darkblue,
+	urlcolor = darkblue,
+	% links in table of contents
+	linktoc=all
+}
+
+\usepackage{tikz}
+
+\usepackage[capitalise,noabbrev,sort]{cleveref}
+
+\definecolor{tol1}{RGB}{68, 119, 170}
+\definecolor{tol2}{RGB}{34, 136, 51}
+\definecolor{tol3}{RGB}{204, 187, 68}
+\definecolor{tol4}{RGB}{238, 102, 119}
+
+\theoremstyle{plain}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{definition}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{question}[theorem]{Question}
+
+\usepackage[many]{tcolorbox}
+\newcommand\colorthm[2]{\tcolorboxenvironment{#1}{
+		colback=#2!10!white,
+		boxrule=0pt,
+		boxsep=1pt,
+		left=2pt,right=2pt,top=2pt,bottom=2pt,
+		oversize=2pt,
+		sharp corners,
+		before skip=\topsep,
+		after skip=\topsep,
+}}
+\colorthm{theorem}{tol1}
+\colorthm{lemma}{tol1}
+\colorthm{proposition}{tol1}
+\colorthm{corollary}{tol1}
+
+\colorthm{definition}{tol2}
+\colorthm{exercise}{tol2}
+\colorthm{question}{tol2}
+
+\colorthm{example}{tol3}
+\colorthm{remark}{tol3}
+
+\renewcommand\leq\leqslant
+\renewcommand\geq\geqslant
+
+\newcommand\Cay{\mathrm{Cay}}
+\newcommand\Ball{\mathrm{B}}
+
+% additional theorem with letters
+\newtheorem{theoremx}{Theorem}
+\renewcommand{\thetheoremx}{\Alph{theoremx}}
+\newtheorem{corollaryx}{Corollary}[theoremx]
+
+\crefalias{theoremx}{theorem}
+
+\usepackage[
+	backend=biber,
+	style=numeric-comp,
+	maxcitenames=10,
+	maxbibnames=100,
+	safeinputenc,
+	useprefix
+]{biblatex}
+\addbibresource{talk1.bib}
+
+% make sure that names are not sorted by prefix first
+\DeclareSortingNamekeyTemplate{
+	\keypart{
+		\namepart{family}}
+	\keypart{
+		\namepart{prefix}}
+	\keypart{
+		\namepart{given}}
+	\keypart{
+		\namepart{suffix}}
+}
+
+% make sure that the prefix is not capitalised
+%  BibLaTeX will capitalise the first letter in some cases, this stops this
+\renewbibmacro{begentry}{\midsentence}
+
+% make sure that biblatex uses a non-breaking space in \textcite
+\renewcommand\namelabeldelim{\addnbspace}
+
+\newenvironment{myproof}{\begin{proof}[\normalfont\bfseries Proof.]}{\end{proof}}
+
+\begin{document}
+
+\title{On the volume growth of finitely-generated groups\\(Part 1: Definitions and Background)}
+\author{Alex Bishop}
+\date{13 December 2023}
+\email{alexbishop1234@gmail.com}
+\urladdr{https://alexbishop.github.io}
+\address{%
+	Section de mathématiques\\
+	Université de Genève\\
+	rue du Conseil-Général~7-9\\
+	1205 Genève, Switzerland}
+
+\begin{abstract}
+In geometric group theory an important observation is that every finitely-generated group can be viewed as a metric space (up to a natural equivalence relation known as quasi-isometry). It is then of great interest to characterise the asymptotics of how the volume of a closed ball in this space grow with respect to its radius. In 1968, Milnor asked if there is a characterisation of groups whose growth is bounded above by a polynomial, and if there is any group whose growth is neither polynomial nor exponential. The first of these questions was answered by Gromov in 1981 who showed that all groups with polynomial growth are virtually nilpotent; and the second question was answered by Grigorchuk in 1985 who contracted an example of a group with so-called intermediate growth. These results sparked a great interest in the study of growth.
+
+The focus of these talks will be on understanding these results, and their impact. In our first talk, we cover the definitions, some examples, and some important results in the area, including, the Švarc-Milnor lemma and Gromov's characterisation of polynomial growth. Our second talk will be devoted to the example, provided by Grigorchuk, of a group with intermediate growth.
+
+This will be the first of the two talks.
+\end{abstract}
+\maketitle
+
+\section{Lengths, Cayley Graphs and Growth}
+
+We say that a group $G$ is finitely generated if there is a finite subset $X \subset G$ such that each element $g\in G$ can be written as a finite product of the form $g = x_1 x_2\cdots x_k$ where each $x_i\in X$.
+The set $X$ is called a finite generating set.
+In this talk, unless otherwise states, we assume that
+\begin{itemize}
+	\item $1\notin X$ since we can always represent the identity as an empty product; and
+	\item $X$ is symmetric, that is, if $x \in X$ then $x^{-1} \in X$.
+\end{itemize}
+These assumptions are important for the definition of the metric in \cref{def:word-metric}.
+
+An example of a group with a finite generating set if $\mathbb{Z}^2$ with addition (see the following example).
+We will use this example throughout these notes due to its simplicity.
+
+\begin{example}
+	The group $(\mathbb{Z}^2,+)$ has the finite generating set
+	\[
+		X = \{(1,0),(-1,0),(0,1),(0,-1)\}.
+	\]
+	Notice that this is not the only generating set for $\mathbb{Z}^2$.
+\end{example}
+
+Given a finite generating set $X$ for a group, we may then define a length function as follows.
+
+\begin{definition}
+	For each finite generating set $X$ for the group $G$, we may define a \emph{length function} $\ell_X\colon G\to \mathbb N$ such that
+	\[
+		\ell_X(g)
+		=
+		\min
+		\{
+			k\in \mathbb{N}
+		\mid
+			g = x_1 x_2 \cdots x_k
+			\text{ where }
+			x_i\in X
+		\}
+	\]
+	for each $g\in G$.
+\end{definition}
+
+From the length function as defined above, we may then introduce a distance metric as follows.
+
+\begin{definition}\label{def:word-metric}
+	Suppose that $X$ is a finite generating set for the group $G$.
+	Then, we define a metric on the group as $d_X\colon G\times G\to \mathbb{N}$ where
+	\[
+		d_X(g,h) = \ell_X(g^{-1}h)
+	\]
+	for each $g,h\in G$.
+\end{definition}
+
+From the above definition, it might not be immediately clear why this function is indeed a distance metric.
+This fact is however clear after we define the Cayley graph of a group as follows.
+
+\begin{definition}\label{def:cayley-graph}
+	The \emph{Cayley graph} $\Cay(G,X)$ is a directed edge-labelled graph with
+	\begin{itemize}
+		\item vertices $g\in G$; and
+		\item edges $g \xrightarrow{x} gx$ for each $g\in G$ and $x\in X$.
+	\end{itemize}
+	We then see that the distance metric $d_X\colon G\times G\to \mathbb{N}$ can be obtained as the natural metric on this graph where we assign a distance of $1$ to each edge.
+\end{definition}
+
+For an example of a Cayley graph, we again consider the group $\mathbb{Z}^2$ as follows.
+
+\begin{example}
+	The group $\mathbb{Z}^2$ is generated by $X = \{(1,0),(-1,0),(0,1),(0,-1)\}$ and has the Cayley graph as given below.
+	
+	\begin{center}
+	\includegraphics{figures/abelian1}
+	\end{center}
+\end{example}
+
+The topic of this talk is the volume growth of groups.
+Thus, we define the volume growth function for a group as follows.
+
+\begin{definition}
+	Let $G$ be a group with finite generating set $X$.
+	Then, the \emph{volume growth function} is given as $\gamma_X\colon \mathbb{N}\to \mathbb{N}$ where
+	\[
+		\gamma_X(n)
+		=
+		\#\{
+			g\in G
+		\mid
+			\ell_X(g) \leq n
+		\}.
+	\]
+	Notice:
+	\begin{itemize}
+		\item $\gamma_X(n)$ measures the volume of a closed ball of radius $n$ in the metric space $(G,d_X)$;
+		\item we are taking the counting measure here since $(G,X)$ has the discrete topology; and
+		\item this definition can be generalised to other metric spaces where volume is defined (although, the volume may depend on the chosen centre for the ball).
+	\end{itemize}
+\end{definition}
+
+Again we may consider the example of $\mathbb{Z}^2$ as follows.
+
+\begin{example}
+	For the generating set
+	$
+		X = \{(1,0),(-1,0),(0,1),(0,-1)\}
+	$,
+	the ball of radius $3$ is given in the following figure.
+	\begin{center}
+		\includegraphics{figures/abelian2}
+	\end{center}
+	We then see that $\gamma_X(3) = 25$.
+	More generally $\gamma_X(n) = 2n^2+2n+1$ for each $n$.
+\end{example}
+
+An important observation here is that the growth function and Cayley graph both depend on the chosen generating set.
+For example, consider the group $\mathbb{Z}$ which can be finite generated by
+\[
+	X = \{1,-1\}
+	\quad\text{and}\quad
+	S = \{2,-2,3,-3\}.
+\]
+We then see that $\gamma_X(n) = 2n+1$ for each $n$; and that $\gamma_S(0)=1$, $\gamma_S(1)=5$ and $\gamma_S(n)=6n+1$ for each $n \geq 2$.
+Moreover, we see that the metric spaces $(\mathbb{Z},d_X)$ and $(\mathbb{Z},d_S)$ are not even isometric. This is clear since
+\begin{align*}
+	d_X(0,2) &= 2, & d_S(0,2)&=1, &
+	d_X(0,3) &= 3, & d_S(0,3)&=1
+\end{align*}
+and thus $d_X$ is not simply a rescaling of the metric $d_S$ (which is what it means for two metric spaces to be isometric).
+In the following section, we introduce a rough equivalence relation on metric spaces, and an equivalence relation on growth.
+
+\section{Quasi-Isometry and Growth Equivalence}
+
+\subsection{An equivalence relation on metric spaces}
+
+We introduce a rough equivalence on metric spaces known as quasi-isometry as follows.
+
+\begin{definition}
+	Let $(E_1,d_1)$ and $(E_2,d_2)$ be two metric spaces.	
+	We say that a map $\Phi\colon E_1 \to E_2$ (not necessarily continuous) is a \emph{quasi-isometry} if there are constants $\lambda\geq 1$, $A\geq 0$ and $C\geq 0$ such that
+	\begin{enumerate}
+		\item\label{def:qi/1-1}
+		for each $x,y\in E_1$
+		\[
+			\lambda^{-1} d_1(x,y) - A
+			\leq
+			d_2(\Phi(x),\Phi(y))
+			\leq
+			\lambda d_1(x,y) + A;
+		\]
+		and
+		\item\label{def:qi/onto}
+		For each $x\in E_1$, there exists some $y\in E_2$ such that
+		\[
+		d_2(x,\Phi(y)) \leq C.
+		\]
+	\end{enumerate}
+	Notice that
+	\begin{itemize}
+		\item property~\ref{def:qi/1-1} means that is approximately an isometric embedding; and
+		\item property~\ref{def:qi/onto} ensures that the map is approximately a subjection.
+	\end{itemize}
+	Moreover, we then say that the spaces are quasi-isometric and write $(E_1,d_1) \cong (E_2,d_2)$.
+\end{definition}
+
+It is then necessary to show that the above definition results in an equivalence relation.
+
+\begin{exercise}\label{ex:qi-isequiv}
+	Show that quasi-isometry is an equivalence relation.\footnote{Hint: in order to prove symmetry of the equivalence relation, you will need the axiom of choice.}
+\end{exercise}
+
+We now have some examples of quasi-isometric spaces as follows.
+
+\begin{example} ~
+	
+	\begin{itemize}
+		\item The metric spaces $\mathbb{Z}^2$, $\mathbb{R}^2$ and $\mathbb{C}$ are all quasi-isometric with their usual metrics.
+		\item Every finite group is quasi-isometric to a point.\footnote{For this reason, some people in geometric group theory as dismissive of finite group theory}
+		\item The integer Heisenberg group is quasi-isometric to the real Heisenberg group.
+	\end{itemize}
+\end{example}
+
+We then see that a group is quasi-isometric to any finite-index subgroups as follows.
+
+\begin{lemma}
+	Let $G$ be a group with finite generating set $X$, and suppose that $S$ is a finite subset of $G$ which generates a finite-index subgroup $H = \left\langle S \right\rangle$.
+	Then, $(H,d_S)\cong(G,d_X)$.
+\end{lemma}
+
+\begin{myproof}
+We will show that the embedding $\Phi\colon H \hookrightarrow G$ is a quasi-isometry.
+
+\medskip
+\noindent
+\underline{Setup}:
+First let $T \subseteq G$ be a finite set of coset representatives of $H$ in $G$.
+Then, we see that
+\[
+	G = H\cdot T = \{
+		h t
+	\mid
+		h\in H, t\in T
+	\}.
+\]
+We then define the map $\varphi\colon G\to T$ such that for each $g\in G$ the element $t= \varphi(g)$ is the unique choice of a coset representative for which $g \in H t$.
+
+\medskip
+\noindent
+\underline{Property \ref{def:qi/1-1} (part 1)}:
+Suppose that $h\in H$ is some element of the subgroup.
+We then see that if
+\[
+	\ell_S(h) = k
+	\quad
+	\text{then}
+	\quad
+	h = s_1 s_2 \cdots s_k
+	\text{ for some }s_i \in S.
+\]
+Then, by replacing each $s_i$ with a product over $X$, we see that
+\[
+	\ell_X(h) = \ell_X(s_1) + \ell_X(s_2) + \cdots + \ell_X(s_k).
+\]
+Thus, with 
+\begin{equation}\label{eq:lam1}
+	\lambda_1 = \max\{\ell_X(s) \mid s\in S\}
+\end{equation}
+we see that $\ell_X(h) \leq \lambda_1 \ell_S(h)$.
+
+\medskip
+\noindent
+\underline{Property \ref{def:qi/1-1} (part 2)}:
+Again let $h\in H$ be some element of the subgroup.
+We then see that
+\begin{align*}
+	h
+	&=
+	x_1
+	x_2
+	\cdots
+	x_k
+	\\
+	&=
+	(x_1 t_1^{-1})
+	(t_1 x_2 t_2^{-1})
+	(t_2 x_3 t_3^{-1})
+	\cdots
+	(t_{k-1} x_k)
+\end{align*}
+where each $t_1 = \varphi(x_1)$ and $t_i = \varphi(t_{i-1} x_i)$ for each $i \geq 2$.
+We then see that each
+\[
+	(x_1 t_1^{-1}),
+	(t_1 x_2 t_2^{-1}),
+	(t_2 x_3 t_3^{-1}),
+	\cdots,
+	(t_{k-1} x_k)
+	\in H.
+\]
+Thus, with
+\begin{equation}\label{eq:lam2}
+	\lambda_2
+	=
+	\max\{
+		\ell_S(a x b)
+	\mid
+		a,b\in T\cup T^{-1}\cup \{1\},
+		x\in X
+	\}
+\end{equation}
+we see that $\ell_S(h) \leq \lambda_2 \ell_X(h)$.
+
+\medskip
+\noindent
+\underline{Property \ref{def:qi/1-1} (combined)}:
+Now with $\lambda = \max\{\lambda_1,\lambda_2\}$, we see that for each $h\in H$, we have
+\[
+	\lambda^{-1}\ell_{S}(h)
+	\leq 
+	\ell_X(h)
+	\leq
+	\lambda \ell_S(h)
+\]
+and thus
+\[
+	\lambda^{-1} d_S(x,y)
+	\leq
+	d_X(x,y)
+	\leq
+	\lambda d_S(x,y)
+\]
+for each $x,y\in H$ (this is clear if we let $h=x^{-1}y$).
+
+Thus, we have Property \ref{def:qi/1-1} of being a quasi-isometry.
+All that remains is to prove Property \ref{def:qi/onto}.
+
+\medskip
+\noindent
+\underline{Property \ref{def:qi/onto}}:
+Suppose that we have some $g\in G$.
+Then, with $t = \varphi(g)$, we see that $h=gt^{-1}\in H$ and $d_X(g,h) = \ell_X(t^{-1})$.
+For each $g\in G$, there exists some $h\in H$ such that
+\[
+	d_X(g,h) \leq \max\{ \ell_X(t^{-1}) \mid t\in T \}.
+\]
+Hence we see that the embedding is a quasi-isometry as required.
+\end{myproof}
+
+\begin{corollary}\label{cor:well-defined-cayley}
+	The Cayley graph of a group is well-defined up to quasi-isometry.
+	That is, if $X$ and $Y$ are two finite generating sets for $G$, then $(G,d_X)\cong(G,d_Y)$.
+\end{corollary}
+
+\subsection{An equivalence relation on growth}
+
+We now define an equivalence relation on the growth of groups and show that it is quasi-isometric invariant.
+
+The following equivalence relation is due to Švarc 1955~\cite{svarc1955} and Milnor 1968~\cite{milnor1968}.
+
+\begin{definition}\label{def:equiv}
+	Suppose that $f,g\in \mathbb{N}\to \mathbb{N}$ are two growth functions (not necessarily from the same group).
+	We define a partial order such that $f\preccurlyeq g$ if there exists some constant $C\geq 1$ such that
+	$
+		f(n) \leq Cg(Cn)
+	$
+	for each $n \in \mathbb{N}$.
+	We write that $f\sim g$ if and only if both $f \preccurlyeq g$ and $g \preccurlyeq f$.
+	
+\end{definition}
+
+From this partial order and equivalence relation, we have the following relations.
+
+\begin{remark}
+	Notice that this equivalence relation
+	\begin{itemize}
+		\item does not distinguish polynomials of the same degree (e.g.~{\color{red}$n^4 \sim 2n^4+ n + 1$});
+		\item distinguishes polynomials of different degrees (e.g.~{\color{red}$n^3 \not\sim n^8$});
+		\item does not distinguish between exponentials of different bases (e.g.~{\color{red}$a^n \sim b^n$ with $a,b > 1$}); and
+		\item for each $0<\alpha <1$ and each polynomial $p(n)$, we have
+		\[
+		p \prec \exp(n^{\alpha}) \prec e^n.
+		\]
+		That is, such a function would lie strictly between the polynomials and exponentials.
+	\end{itemize}
+\end{remark}
+
+\begin{remark}
+Suppose that $G$ is a group with finite generating set $X$, then the growth can be at most $\gamma_X(n) \leq (|X|+1)^n$ and thus $\gamma_X \preccurlyeq e^n$ for each group.
+\end{remark}
+
+\begin{definition}[Growth types]
+	We say that a growth function $f\colon \mathbb{N}\to\mathbb{N}$ is
+	\begin{itemize}
+		\item \emph{polynomial} if $f\preccurlyeq n^d$ for some $d\geq 0$;
+		\item \emph{exponential} if $f \sim e^n$; or
+		\item \emph{intermediate} if it's neither polynomial nor exponential.
+	\end{itemize}
+\end{definition}
+
+We also notice that $\preccurlyeq$ is in fact only a partial order on group growth as in the following.
+
+\begin{remark}
+	There are groups with incomparable volume growth (see pp.~293-4 of \cite{GrigrochukInter}).
+\end{remark}
+
+An important property of this equivalence relation on growth is that it is invariant under quasi-isometry of groups as in the following lemma.
+
+\begin{lemma}
+	If $G$ and $H$ are quasi-isometric groups, then their growth functions are equivalent.
+\end{lemma}
+
+\begin{myproof}
+Let
+\begin{itemize}
+	\item $X$ be a finite generating set for $G$ and
+	\item $S$ be a finite generating set for $H$.
+\end{itemize}
+From \cref{cor:well-defined-cayley}, it makes sense to say that $(G,d_X)\cong (H,d_S)$.
+Thus, there exists some map $\Phi\colon G\to H$ and constants $\lambda\geq 1$ and $A \geq 0$ such that
+\begin{equation}\label{eq:helper}
+	\lambda^{-1} d_X(x,y) - A
+	\leq
+	d_S(\Phi(x),\Phi(y))
+	\leq
+	\lambda d_X(x,y) + A.
+\end{equation}
+Without loss of generality, we may assume that $\Phi(1)=1$.
+Generality is maintained by replacing $\Phi(g)$ with $\Phi(1)^{-1}\Phi(g)$, we then see that the resulting map will also be a quasi-isometry since
+\[
+	d_S(\Phi(x),\Phi(y)) = \ell_S(\Phi(x)^{-1}\Phi(y)) = d_S(k\Phi(x),k\Phi(y))
+\]
+for each $x,y\in G$ and $h\in H$.
+
+Let $M = \lambda (1+A)$, then from (\ref{eq:helper}) we see that if $d_X(x,y) \geq M$ with $x,y\in G$, then $d_X(\Phi(x),\Phi(y)) \geq 1$ and thus $\Phi(x)\neq \Phi(y)$.
+To simplify notation, we write $B = B_{G,X}(M)$ for the ball of radius $M$ in $(G,d_X)$ centred at the group identity.
+Notice then that if $x,y\in G$ with $x\notin y\cdot B$, then $d_X(x,y) \geq M$ and $\Phi(g)\neq \Phi(h)$.
+
+Let some $n\in \mathbb{N}$ be given.
+Then we choose some subset $I \subseteq B_{G,X}(n)$ such that
+\[
+	B_{G,X}(n)
+	\subseteq
+	\bigcup_{i\in I}
+	i\cdot B
+\]
+and for each $i\in I$ we have that
+\[
+	i \notin \bigcup_{j\in I\setminus\{i\}}
+	j\cdot B.
+\]
+We then notice that if $i,j\in I$ with $i\neq j$, then $\Phi(i)\neq \Phi(j)$.
+
+From (\ref{eq:helper}), we see that for each element $i\in I$, the element $\Phi(i) \in H$ is contained in the ball, centred at the identity, with radius $\lambda n+A$ in $(H,d_S)$.
+
+Notice then that $\gamma_X(n)=|B_{G,X}(n)| \leq |I|\cdot|B|$.
+Thus, if we want to find a bound on the size of the closed ball $B_{G,X}(n)$, we need only find a bound on the size of $I$.
+
+We see that the map $\Phi$ is an injection when restricted to $I$, and thus $|I|$ is bounded from above by the size of the closed ball of radius $\lambda n+A$ in $(H,d_S)$.
+Noticing then that the size of such a ball is given by $\gamma_S(\lambda n+A)$, we see that
+\[
+	\gamma_X(n)
+	\leq 
+	|B| \gamma_S(\lambda n + A)
+\]
+Noticing then that $\gamma_X(0)=\gamma_S(0)=1$ and that growth functions are non-decreasing, we see that
+\[
+	\gamma_X(n)
+	\leq 
+	C\gamma_S(C n)
+\quad\text{where}\quad
+	C =
+	\max\{\lambda + A,|B|\}.
+\]
+and thus $\gamma_X\preccurlyeq \gamma_S$.
+
+Since quasi-isometry is an equivalence relation, we may swap the two groups and repeat the same argument to show that $\gamma_S\preccurlyeq \gamma_X$. Thus, $\gamma_X\sim \gamma_S$ as desired.
+\end{myproof}
+
+\begin{corollary}
+	The growth of a finitely-generated group is well-defined with respect to the equivalence relation as defined in \cref{def:equiv}.
+	That is, $\gamma_X \sim \gamma_Y$ if $X$ and $Y$ are generating sets of the same group.
+\end{corollary}
+
+Note that we can extend the above result to a wider class of metric spaces if we make some adjustments as in the following remark.
+
+\begin{remark}
+	The above result can be extended for all quasi-isometric metric spaces where volume is translation invariant.
+	Although, we need to adjust our definitions of growth and the growth equivalent relation.
+	In particular, we would say that $f \preccurlyeq g$ if
+	\[
+		f(n) \leq C \cdot g(Cn+C)
+	\]
+	for some constant $C \geq 0$.
+	Notice that this weaker equivalence is the same for the case of groups.
+\end{remark}
+
+It is then important to note here that two groups having equivalent growth functions does not imply that they are quasi-isometric.
+In particular, we have the following counterexample.
+
+\begin{example}
+	The group $\mathbb{Z}^4$ and the integer Heisenberg group
+	\[
+		H_3
+		=
+		\left\{
+			\begin{bmatrix}
+				1 & a & c\\
+				0 & 1 & b\\
+				0 & 0 & 1
+			\end{bmatrix}
+		\ \middle\vert\ 
+			a,b,c\in \mathbb{Z}
+		\right\}
+	\]
+	both have growth equivalent to $n^4$, however, they are not quasi-isometric.
+\end{example}
+
+\begin{remark}
+	The following are invariant under quasi-isometry:
+	\begin{itemize}
+		\item being finitely presentable (or more generally finiteness conditions);
+		\item being amenable;
+		\item Dehn functions (up to the growth equivalence relation);
+		\item being hyperbolic;
+		\item being virtually abelian, virtually nilpotent or virtually free.
+	\end{itemize}
+\end{remark}
+
+\section{Švarc-Milnor Lemma}
+
+
+\begin{definition}\label{def:geodesic}
+	Let $(E,d)$ be a metric space.
+	
+	A curve of length $\ell$ from $x$ to $y$ is a continuous map from of the form
+	\[
+		c\colon
+		[0,\ell] \to E
+	\]
+	such that $c(0)=x$, $c(\ell)=y$ and for each $0\leq a \leq b \leq \ell$, we have
+	\[
+		d(c(a), c(b)) = b-a.
+	\]
+	That is, the map $c$ preserves distances.
+	We say that a space is geodesic if for each pair of points $x,y\in E$, there is a curve of length $d(x,y)$ from $x$ to $y$.
+\end{definition}
+
+
+\begin{definition}
+	We say that a metric space $(E,d)$ is 
+	\begin{itemize}
+		\item \emph{geodesic} if it satisfied \cref{def:geodesic}; and
+		\item \emph{proper} if every closed bounded subset $X \subseteq E$ is also compact.
+	\end{itemize}
+	
+	Suppose that $G$ has a group action by isometries on the space $E$.
+	We say that this action is
+	\begin{itemize}
+		\item \emph{properly discontinuous} if for each compact subset $K \subseteq E$, the set
+		\[
+		\{
+		g\in G
+		\mid
+		g\cdot K \cap K \neq \emptyset
+		\}
+		\]
+		is finite;
+		\item \emph{cocompact} if there exists some compact subset $K \subseteq E$ such that
+		\[
+		E = G\cdot K = \bigcup_{g\in G} g\cdot K.
+		\]
+	\end{itemize}
+	We then say that a group action is \emph{geometric} if the space it acts on is geodesic and proper, and the action is both properly discontinuous and cocompact.
+\end{definition}
+
+
+\begin{lemma}[Švarc-Milnor]
+	Suppose $G$ has a geometric action on a metric space $(E,d)$.
+	Then, $G$ is finitely generated and $G$ is quasi-isometric to $E$.
+	Moreover, for each point $x\in E$, the map
+	\[
+		\Phi_x\colon g \mapsto g\cdot x
+	\]
+	is a quasi-isometry from $G\to E$.
+\end{lemma}
+
+\begin{myproof}
+	See Theorem 8.10 on p.~135 of \cite{bridson2013metric}
+\end{myproof}
+
+\begin{example}
+	It is then possible to use the Švarc-Milnor lemma to show that the $(4,4,4)$-triangle group is quasi-isometric to the 2-dimensional hyperbolic plane.
+\end{example}
+
+Why do we care about quasi-isometries:
+\begin{itemize}
+	\item it allows us to compute the growth type of groups;
+	\item it can be used to verify that two groups are not isomorphic;
+	\item it allows us to consider our groups from a more metric-space point of view.
+\end{itemize}
+
+\begin{remark}
+	Any metric space coming from a locally finite graph is quasi-isometric to some continuous geodesic proper metric space.
+	In particular,
+	\begin{itemize}
+		\item 
+	if a vertex $v$ in such a graph has $d$ adjacent edges, then we replace it with a copy of a regular $d$-sided polygon in $\mathbb{R}^2$ with unit length sides; and
+		\item 
+	We replace each edge with a copy of the unit square in $\mathbb{R}^2$.
+	\item We then obtain a quasi-isometric space by gluing these spaces together.
+	\end{itemize}
+\end{remark}
+
+\section{Milnor's questions on growth and Gromov theorem}
+
+\begin{question}
+In 1968, Milnor~\cite{milnor1968a} noticed that all known groups either had
+\begin{itemize}
+	\item polynomial growth and were \emph{virtually nilpotent}; or
+	\item exponential growth.
+\end{itemize}
+Milnor formally asked if these were the only possible categories into which a group can fall.
+\end{question}
+
+\begin{definition}
+	Suppose that $\mathcal{P}$ is a property of groups, e.g., abelian, free, \emph{nilpotent}.
+	Then, we say that a group is \emph{virtually $\mathcal{P}$} if it contains a finite-index subgroup which has property $\mathcal{P}$.
+\end{definition}
+
+In our second talk, we will cover the example, due to Grigorchuk~\cite{GrigrochukInter,GrigorchukBurnside}, of a group whose growth lies strictly between the polynomials and exponentials.
+
+The first half of Milnor's question was answered by Gromov in a paper~\cite{Gromov1981} in which the following result was proven.
+We do not provide a proof of this result since it is well beyond the scope of this talk.
+We direct the interested reader to a book `How groups grow' by Mann~\cite{Mann}.
+
+\begin{theorem}
+	A group has polynomial volume growth if and only if it is virtually nilpotent.
+\end{theorem}
+
+To understand this result, we define the class of nilpotent groups as follows.
+
+
+\begin{definition}
+	Given a group $G$, we define the commutator subgroup as
+	\[
+	[G,G] = \left\langle\left\{ [g,h] = ghg^{-1}h^{-1}
+	\ \middle|\ 
+	g,h\in G \right\}\right\rangle.
+	\]
+	This group measure how far from being abelian $G$ is.
+	For example, if $A$ is an abelian group, then $[A,A] = \{1\}$ is the trivial group;
+	while if $F_2$ is the free group of rank 2, then $[F_2,F_2] = F_2$.
+\end{definition}
+
+\begin{definition}
+	A group $G$ is \emph{nilpotent} if there exists some $k\geq 0$ such that $G_k=\{1\}$ where
+	\[
+	G_0 = G,
+	\text{ and }
+	G_{k+1} = [G,G_k]\text{ for each }k \geq 0.
+	\]
+	We then define $\mathrm{order}(G)$ to be the smallest such $k$ as described above.
+\end{definition}
+
+\begin{remark}
+	Alternatively, we can define the virtually nilpotent groups as those that contain a unitriangular (i.e.~upper-triangular with $1$s on the diagonal) integer matrix group as a finite-index subgroup. (See Section 17.2, in particular Theorems 17.2.2 and 17.2.5, in \cite{Kargapolov1979}.)
+\end{remark}
+
+\subsection{Growth of nilpotent groups}
+
+We notice that each quotient
+$
+	G_{k-1}/G_{k}
+$
+is a finitely-generated abelian groups.
+Thus, by the classification of finitely generated abelian groups, there is a well-defined value $d_k= \mathrm{rank}(G_{k-1}/G_k)$ such that we have the group isomorphism
+\[
+	G_{k-1}/G_{k}
+	\cong
+	\mathbb{Z}^{d_k}
+	\times
+	A_k
+\]
+where $A_k$ is a finite abelian group.
+
+\begin{lemma}[See Theorem 2 in \cite{Bass1972}]
+Let $G$ be a nilptent group and define
+\[
+d(G)
+=
+\sum_{k=1}^{\mathrm{order}(G)}
+k\cdot \mathrm{rank}(G_{k-1}/G_{k}),
+\]
+then the volume growth of $G$ is equivalent to $n^{d(G)}$.
+\end{lemma}
+
+\printbibliography
+
+\end{document}
