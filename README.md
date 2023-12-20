@@ -2,8 +2,6 @@
 
 This repo contains the notes for a 2-part minicourse I will give at the Unversity of Geneva on 13 and 20 December 2023.
 
-Currently, this repo only contains the notes for the first week. The second week's notes will be uploaded on 20 December 2023.
-
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
 [cc-by]: http://creativecommons.org/licenses/by/4.0/
@@ -17,7 +15,7 @@ The focus of these talks will be on understanding these results, and their impac
 
 ## Compiling the Notes
 
-To compile the notes, simply run the following command `latexmk` from within the top directory of this repo.
+To compile these notes, simply run `latexmk` from within one of the directories `talk1` or `talk2`.
 
 ## Download Compiled Version
 

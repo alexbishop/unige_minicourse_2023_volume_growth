@@ -1,5 +1,5 @@
 ## List of all top level tex files
-@default_files = ('figures/*.tex', 'talk1.tex');
+@default_files = ('figures/*.tex', 'talk2.tex');
 
 ## Keep all output in the same directory as their corresponding tex file
 $do_cd = 1;

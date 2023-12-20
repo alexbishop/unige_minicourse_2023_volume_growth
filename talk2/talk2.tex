@@ -1,0 +1,1137 @@
+\documentclass[11pt,a4paper,reqno]{amsart}
+
+% localisation settings
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[australian]{babel}
+\usepackage{csquotes}
+
+\usepackage{microtype}
+
+\usepackage{fullpage}
+%\usepackage{parskip}
+
+\usepackage{enumitem}
+
+\usepackage{amsfonts,amsmath,amsthm,amssymb,mathtools}
+\usepackage{thmtools, thm-restate}
+
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\hypersetup{%
+	% link colours
+	colorlinks=true,
+	linkcolor = darkblue,
+	anchorcolor = darkblue,
+	citecolor = darkblue,
+	filecolor = darkblue,
+	urlcolor = darkblue,
+	% links in table of contents
+	linktoc=all
+}
+
+\usepackage{tikz}
+
+\usepackage[capitalise,noabbrev,sort]{cleveref}
+
+\definecolor{tol1}{RGB}{68, 119, 170}
+\definecolor{tol2}{RGB}{34, 136, 51}
+\definecolor{tol3}{RGB}{204, 187, 68}
+\definecolor{tol4}{RGB}{238, 102, 119}
+
+\theoremstyle{plain}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{definition}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{question}[theorem]{Question}
+
+\usepackage[many]{tcolorbox}
+\newcommand\colorthm[2]{\tcolorboxenvironment{#1}{
+		colback=#2!10!white,
+		boxrule=0pt,
+		boxsep=1pt,
+		left=2pt,right=2pt,top=2pt,bottom=2pt,
+		oversize=2pt,
+		sharp corners,
+		before skip=\topsep,
+		after skip=\topsep,
+}}
+\colorthm{theorem}{tol1}
+\colorthm{lemma}{tol1}
+\colorthm{proposition}{tol1}
+\colorthm{corollary}{tol1}
+
+\colorthm{definition}{tol2}
+\colorthm{exercise}{tol2}
+\colorthm{question}{tol2}
+
+\colorthm{example}{tol3}
+\colorthm{remark}{tol3}
+
+\newenvironment{myproof}{\begin{proof}[\normalfont\bfseries Proof.]}{\end{proof}}
+
+\renewcommand\leq\leqslant
+\renewcommand\geq\geqslant
+
+\newcommand\Cay{\mathrm{Cay}}
+\newcommand\Ball{\mathrm{B}}
+
+\usepackage[
+	backend=biber,
+	style=numeric-comp,
+	maxcitenames=10,
+	maxbibnames=100,
+	safeinputenc,
+	useprefix
+]{biblatex}
+\addbibresource{talk2.bib}
+
+% make sure that names are not sorted by prefix first
+\DeclareSortingNamekeyTemplate{
+	\keypart{
+		\namepart{family}}
+	\keypart{
+		\namepart{prefix}}
+	\keypart{
+		\namepart{given}}
+	\keypart{
+		\namepart{suffix}}
+}
+
+% make sure that the prefix is not capitalised
+%  BibLaTeX will capitalise the first letter in some cases, this stops this
+\renewbibmacro{begentry}{\midsentence}
+
+% make sure that biblatex uses a non-breaking space in \textcite
+\renewcommand\namelabeldelim{\addnbspace}
+
+\begin{document}
+
+
+\title{On the volume growth of finitely-generated groups\\(Part 2: Intermediate Growth)}
+\author{Alex Bishop}
+\date{20 December 2023}
+\email{alexbishop1234@gmail.com}
+\urladdr{https://alexbishop.github.io}
+\address{%
+	Section de mathématiques\\
+	Université de Genève\\
+	rue du Conseil-Général~7-9\\
+	1205 Genève, Switzerland}
+
+\begin{abstract}
+In geometric group theory an important observation is that every finitely-generated group can be viewed as a metric space (up to a natural equivalence relation known as quasi-isometry). It is then of great interest to characterise the asymptotics of how the volume of a closed ball in this space grow with respect to its radius. In 1968, Milnor asked if there is a characterisation of groups whose growth is bounded above by a polynomial, and if there is any group whose growth is neither polynomial nor exponential. The first of these questions was answered by Gromov in 1981 who showed that all groups with polynomial growth are virtually nilpotent; and the second question was answered by Grigorchuk in 1985 who contracted an example of a group with so-called intermediate growth. These results sparked a great interest in the study of growth.
+
+The focus of these talks will be on understanding these results, and their impact. In our first talk, we cover the definitions, some examples, and some important results in the area, including, the Švarc-Milnor lemma and Gromov's characterisation of polynomial growth. Our second talk will be devoted to the example, provided by Grigorchuk, of a group with intermediate growth.
+
+This will be the second of the two talks.
+\end{abstract}
+\maketitle
+
+\section{Recall from Previous Week}
+
+Recall that if $G$ is a group with finite generating set $X$, then
+\[
+  \gamma_X(n)
+  =
+  \#\{
+    g\in G
+  \mid
+    \ell_X(g)\leq n
+  \}
+\]
+is the volume growth function where
+\[
+  \ell_X(g)
+  =
+  \min\{
+    k\in \mathbb N
+  \mid
+    g =x_1 x_2 \cdots x_k
+    \text{ for some }
+    x_i\in X
+  \}
+\]
+is the length of an element.
+
+Moreover, we introduced the partial order on volume growth functions $f,g\colon \mathbb N \to \mathbb N$
+\[
+  f\preccurlyeq g
+  \text{ if there exists some }
+  C\geq 1
+  \text{ such that }
+  f(n) \leq Cg(Cn)
+  \text{ for each }n\in \mathbb N.
+\]
+We then said that $f\sim g$ if both $f \preccurlyeq g$ and $g \preccurlyeq f$.
+Recall that the volume growth of a group is well-defined, with respect to $\sim$, up to change of generating set.
+
+\begin{lemma}If two (finitely-generated) groups are quasiisometric, then they have equivalent volume growth functions.\end{lemma}
+
+
+In our previous talk, we said that the volume growth $\gamma(n)$ a group is
+\begin{itemize}
+  \item \emph{polynomial} if $\gamma \preccurlyeq n^d$ for some $d\geq 1$;
+  \item \emph{exponential} if $\gamma \sim e^n$; and
+  \item \emph{intermediate} if neither polynomial nor exponential.
+\end{itemize}
+In this talk, we show that there exists a group whose growth is intermediate, in particular, its growth if bound as
+\[
+  \exp(n^\alpha) \preccurlyeq \gamma \preccurlyeq \exp(n^\beta)
+\]
+for some values $0<\alpha\leq \beta< 1$.
+(In the previous talk, we gave such functions $\exp(n^\alpha)$ as an example of an intermediate function.)
+
+
+\begin{exercise}\label{ex:submulti}
+  The volume growth function $\gamma(n)$ of a group is submultiplicative, that if, for each $n,m\in \mathbb N$, we have $\gamma(n+m) \leq \gamma(n)\gamma(m)$.
+\end{exercise}
+
+\section{Introduction}
+
+Let $\Sigma = \{0,1\}$, then we write $\Sigma^*$ for the set of all sequences of letters from $\Sigma$.
+
+\begin{example}
+  The empty word $\varepsilon \in \Sigma^*$, and the sequences $001,100,1\in \Sigma^*$ are all different.
+\end{example}
+
+From these sequences, we may define an infinite (child-ordered) binary rooted tree $\mathcal T_2$ where
+\begin{itemize}
+  \item the root is given by $\varepsilon$;
+  \item each node $\sigma\in \Sigma^*$ has a
+    \begin{itemize}
+      \item left child given by $\sigma 0 \in \Sigma^*$; and a
+      \item right child given by $\sigma 1 \in \Sigma^*$.
+    \end{itemize}
+\end{itemize}
+We then present part of this tree is \cref{fig:bintree}.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics{figures/labelledTree}
+  \caption{The binary rooted tree $\mathcal T_2$.}\label{fig:bintree}
+\end{figure}
+
+We then write $\mathrm{Aut}(\mathcal T_2)$ for the groups of all graph automorphism of the tree.
+Notice that each such automorphism will necessarily fix the root and each level of the tree
+ (i.e.~the automorphism sends each vertex to another vertex on the same level).
+
+The Grigorchuk group $\mathbb G \subset \mathrm{Aut}(\mathcal T_2)$ is a group which is generated by 4 tree automorphisms which we will call $a$, $b$, $c$ and $d$.
+These tree automophisms are then defined recursively such that
+\begin{align*}
+    a(0\sigma) &= 1 \sigma &
+    b(0\sigma) &= 0 a(\sigma) &
+    c(0\sigma) &= 0 a(\sigma) &
+    d(0\sigma) &= 0\sigma
+    \\
+    a(1\sigma) &= 0 \sigma &
+    b(1\sigma) &= 1 c(\sigma) &
+    c(1\sigma) &= 1 d(\sigma) &
+    d(1\sigma) &= 1 b(\sigma)
+\end{align*}
+for each $\sigma\in \Sigma^*$.
+We can alternatively view these tree automophisms as the \emph{portraits} in \cref{fig:grig-generators}.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics{figures/grigorchuk}
+	\caption{Generators of Grigorchuk's group}
+	\label{fig:grig-generators}
+\end{figure}
+
+In this talk, we will consider the volume growth of $\mathbb G$ with respect to the generating set $X = \{a,b,c,d\}$.
+
+Our main goal in this talk will be to understand the following result.
+
+\begin{restatable*}{theorem}{ThmMain}\label{thm:main}
+  There exists some numbers $0 < \alpha \leq \beta< 1$ such that the growth of Grigorchuk's groups is bounded as
+  \[
+   \exp(n^\alpha)
+   \preccurlyeq
+   \gamma
+   \preccurlyeq
+   \exp(n^\beta)
+  \]
+  where $\gamma$ is the volume growth function for Grigorchuk's group.
+  In particular, Grigorchuk's group has intermediate growth.
+\end{restatable*}
+
+\section{Basic Properties}
+
+The first thing we may notice here is that each generator $a$, $b$, $c$ and $d$ is an involution.
+That is, we have $a^2 = b^2 = c^2 = d^2=1$.
+Moreover, from the definitions of the generators in \cref{fig:grig-generators}, we see that $bcd=1$.
+In particular, this means that $c = bd$ and thus the Grigorchuk group is generated by $S=\{a,b,d\}$.
+We now define the restriction of an element as follows.
+
+\begin{definition}
+  Suppose that $g\in \mathbb G$, then for each $x\in \Sigma^*$, we write
+  $
+    g|_x
+  $
+  for the action that the element $g$ performs on the subtree rooted at $x$.
+  For example, $b|_0=1$, $b|_1=c$ and $ada|_1=1$.
+  Notice from the definition of our generators, we see that
+  $g|_x \in \mathbb G$ for each $g\in \mathbb G$ and $x\in \Sigma^*$.
+\end{definition}
+
+We now consider the stabiliser subgroups as follows.
+
+\begin{definition}
+  For each integer $k \geq 1$, we define a subgroup
+  \[
+    \mathrm{Stab}_{\mathbb G}(k)
+    =
+    \{
+      g\in \mathbb G
+    \mid
+      g\cdot x = x
+      \text{ for each }
+      x\in \Sigma^*
+      \text{ with }
+      |x|\leq k
+    \}.
+  \]
+  That is, $\mathrm{Stab}_{\mathbb G}(k)$ is the subgroup of all elements which stabilise the first $k$ levels of the tree.
+
+  \medskip
+
+  Notice that the subgroup $\mathrm{Stab}_{\mathbb G}(1)$ is finite index in $\mathbb G$.
+In particular, $\mathbb G = \mathrm{Stab}_{\mathbb G}(1) \cdot\{1,a\}$.
+\end{definition}
+
+\begin{remark}
+Notice that we can write each element $g\in \mathbb G$ as a 
+\[
+  g = (g|_0,g|_1)\cdot s
+\]
+where $s \in \mathrm{Sym}(\Sigma)$ is a permutation of the first level of the tree.
+Given two such elements
+\[
+  g = (g|_0,g|_1)\cdot s
+  \quad\text{and}\quad
+  h = (h|_0,h|_1)\cdot t
+\]
+we see that
+\[
+  gh = 
+  (g|_0 \cdot h|_{s(0)}, g|_1 \cdot h|_{s(1)}) \cdot (s t)
+\]
+
+Similarly, for each level $k \geq 1$, we can write the element as
+\[
+  g
+  =
+  \left(
+    g_{\sigma}
+  \right)_{\sigma\in \Sigma^k}
+  \cdot s
+\]
+where $s\in \mathrm{Sym}(\Sigma^k)$ is a permutation of the first $k$ levels of the tree.
+\end{remark}
+
+\begin{lemma}\label{lem:infinite}
+  The Grigorchuk group $\mathbb G$ contains infinitely many elements.
+\end{lemma}
+
+\begin{myproof}
+  Suppose for contradiction that $\mathbb{G}$ is finite of size $n\geq 1$, then $|\mathrm{Stab}_{\mathbb G}(1)| = n/2$ since it is a subgroup of index 2.
+
+  Notice that $b,c,d,aba \in \mathrm{Stab}_{\mathbb G}(1)$ where $b=(a,d)$, $c=(a,d)$, $d= (1,b)$, $aba=(d,a)$.
+  Thus, we see that the image of $\mathrm{Stab}_{\mathbb G}(1)$ under the map $g\mapsto g|_1$ contains the group $\mathbb G$.
+  This then means that $n/2=|\mathrm{Stab}_{\mathbb G}(1)|\geq |\mathbb G|=n$ which is not possible as $n\geq 1$.
+\end{myproof}
+
+
+% We now define a map
+% $\Psi\colon \mathbb G \to \mathrm G \times \mathrm G$ as
+% \[
+%   \Psi(g) = (g\vert 0, g\vert 1).
+% \]
+% Notice then that the element $g$ is completly determined by $\Psi(g)$ and its action on the first level of the tree.
+
+\begin{lemma}
+  We have $(ad)^4=1$.
+\end{lemma}
+\begin{myproof}
+  We see that $adad = (b,b)\cdot 1$.
+  Hence, $(ad)^4 = (b^2, b^2)\cdot 1 = 1$.
+\end{myproof}
+
+\begin{exercise}
+  Using similar arguments, show that $(ac)^8=1$ and $(ab)^{16}=1$.
+\end{exercise}
+
+More generally, the Grigorchuk group was originally introduced in \cite{GrigorchukBurnside} as a solution to a generalisation of the Burnside problem as in the following lemma.
+
+\begin{lemma}[Theorem 10.11 in \cite{Mann}]
+  For each $g\in \mathbb G$, there exists some $k\in \mathbb N$ such that $g^{2^k}=1$.
+\end{lemma}
+
+% Notice that an element $g\in \mathrm{Stab}(1)$ is completly determined by its actions on its first le
+
+We now see that part of a presentation for $\mathbb G$ is given by
+\[
+  \mathbb G
+  =
+  \left\langle
+    a,b,d
+  \mid
+    a^2=b^2=d^2, (ad)^4=1,\ldots
+  \right\rangle.
+\]
+It is known that the Grigorchuk group is not finitely presented, that is, we cannot give such a presentation with only finitely many relators.
+
+% {\color{red}
+%   We notice that
+%   \begin{itemize}
+%     \item each generator is an involution
+%     \item define the restriction of an element
+%     \item the order of the element $ad$ is 4.
+%     \item from this we can contruct a partial presentation for the group.
+%   \end{itemize}
+% }
+
+\section{Helping Lemmas}
+
+\subsection{Background} ~
+
+\begin{lemma}
+  If $G$ has growth $\gamma$, then $G\times G$ has growth type $\gamma^2$.
+\end{lemma}
+
+\begin{myproof}
+Suppose that $\gamma_X(n)$ is the volume growth function of $G$ with respect to the generating set $X$.
+We may then obtain a generating set of $G\times G$ as $S_1\cup S_2$ where
+\begin{align*}
+  S_1 &= \{ (x,1_G) \mid x\in X\}, &
+  S_2 &= \{ (1_G,x) \mid x\in X\}.
+\end{align*}
+We then see that
+$
+  \gamma_{S_1}(n) = \gamma_{S_2}(n) = \gamma_X(n).
+$
+
+Notice that $\gamma_{S_1}(n), \gamma_{S_2}(n) \leq \gamma_{S_1\cup S_2}(n)$ and thus from \cref{ex:submulti}, we see that
+\[
+  \gamma_{S_1 \cup S_2}(2n) \geq \gamma_{S_1}(n) \gamma_{S_2}(n)= \gamma_{X}(n)^2.
+\]
+Hence, $\gamma_X \preccurlyeq \gamma_{S_1\cup S_2}$.
+
+Moreover, we see that any element of $G\times G$ of length at most $n$ can be written as a product of an element of ${1}\times G$ and an element of $G\times {1}$, both of length at most $n$.
+Thus,
+\[
+  \gamma_{S_1\cup S_2}(n) \leq \gamma_{S_1}(n) \gamma_{S_2}(n) = \gamma_X(n)^2.
+\]
+Thus, $\gamma_{S_1\cup S_2} \preccurlyeq \gamma_X^2$.
+
+Hence, the growth function of $G\times G$ is given by $\gamma^2$ where $\gamma$ is the growth of $G$.
+\end{myproof}
+
+\subsection{Lower bound lemma}~
+
+\begin{lemma}\label{lem:lower_bound}
+	Suppose that $\gamma(n)$ is a strictly increasing growth function for which $\gamma^2 \sim \gamma$.
+	Then, $ \exp(n^{\alpha})\preccurlyeq \gamma$ for some $\alpha>0$.
+	In particular, $\gamma(n)$ does not have a polynomial upper bound.
+\end{lemma}
+
+\begin{proof}[\normalfont\bfseries Proof.]
+We extend the definition of $\gamma(n)$ to a function $f\colon \mathbb{R}_+\to\mathbb{R}_+$ where
+\[
+  f(x) = \gamma(\lfloor x \rfloor)
+\]
+Then, $\gamma^2 \preccurlyeq \gamma$ implies that there exists some constant $C\geq 1$ such that
+\begin{equation}\label{eq:lower_bound/1}
+  f(x)^2
+  \leq
+  Cf(Cx)
+\end{equation}
+for each $x\geq 0$.
+
+We now define a non-decreasing function $\pi\colon \mathbb R_+ \to \mathbb R_+$ as
+\[
+  \pi(x)=\ln f(x).
+\]
+From (\ref{eq:lower_bound/1}), we then see that
+\[
+  2\pi(x) \leq \ln(C)+\pi(Cx)
+\]
+for each $x \geq 0$, or equivalently
+\begin{equation}\label{eq:lower_bound/2}
+  2\pi(x/C) - \ln(C) \leq \pi(x)
+\end{equation}
+for each $x\geq 0$.
+We may then iterate (\ref{eq:lower_bound/2}) to obtain the bound
+\[
+  2^k \pi(x/C^k) - \ln(C)(2^{k-1} + \cdots +2^2 + 2 + 1) \leq \pi(x)
+\]
+for each $k\in \mathbb N$ and each $x\geq 0$.
+In particular, we see that
+\[
+  2^k \pi(x/C^k) - \ln(C)(2^k-1) \leq \pi(x).
+\]
+Let $k = \lfloor \log_C(x) - \log_C(M) \rfloor$ where $M$ is a sufficiently large constant such that $M\geq C\geq 1$ and $\pi(M)\geq 2\ln(C)+1$.
+Then, for each $x\geq M$ we see that
+\begin{align*}
+  \pi(x)
+  &\geq
+  2^k \pi(x/C^k) - \ln(C)(2^k-1)
+  \\
+  &\geq
+  2^k \pi(M) - \ln(C)(2^k-1) 
+  \\
+  &\geq
+  2^k \geq 2^{\log_C(x)} = x^{1/\log_2(C)}.
+\end{align*}
+Thus, we see that
+\[
+  \gamma(x) \geq \exp(n^{1/\log_2(C)})
+\]
+for each $n \geq M$ where $M$ is as above.
+Then, with $K = \exp(M^{1/\log_2(C)})$, we see that
+\[
+  K \gamma(K n) \geq \exp(n^{1/\log_2(C)})
+\]
+for each $n\in \mathbb N$.
+Thus, we have $\exp(n^\alpha) \preccurlyeq \gamma$ as desired with $\alpha = 1/\log_2(C) > 0$.
+\end{proof}
+
+\subsection{Upper bound lemma}~
+
+\begin{lemma}[Lemma 2.2 in \cite{GrigorchukPak}]\label{lem:upperbound1}~
+
+\smallskip
+Let $\gamma\colon \mathbb N \to \mathbb N$ be the volume growth function of a group.
+
+Suppose that there exists constants $k \geq 2$, $C \geq 1$ and $\alpha \in (0,1)$ such that
+\begin{equation}\label{eq:lower_bound}
+  \gamma(n)
+  \leq
+  C\sum_{\substack{n_1,n_2,\ldots,n_k\in \mathbb{N}\\n_1+n_2+\cdots+n_k \leq \alpha n}}
+  \gamma(n_1) \gamma(n_2)\cdots \gamma(n_k).
+\end{equation}
+Then, there exists some $\beta\in (0,1)$ such that
+\[
+  \gamma \preccurlyeq \exp(n^\beta).
+\]
+That is, the growth function grows slower than exponential.
+
+	%
+	% \smallskip
+	% Suppose that $\gamma(n)$ is a growth function over the generating set $X$ which satisfies
+	% \begin{equation}\label{eq:shrinking-lemma}
+	% 	\gamma(n)
+	% 	\leq
+	% 	%		K
+	% 	%		\sum\left\{
+	% 	%			\gamma(n_1) \gamma(n_2)
+	% 	%			\mid
+	% 	%			n_1+n_2 = \alpha n+L
+	% 	%			\text{ and }
+	% 	%			n_1,n_2\geq 0
+	% 	%		\right\},
+	% 	K \sum_{\substack{n_1+n_2 = \alpha n+L\\n_1,n_2\geq 0}}
+	% 	\gamma(n_1) \gamma(n_2),
+	% \end{equation}
+	% where $K > 0$, $L\geq 0$ and $0<\alpha<1$,
+	% then
+	% \[
+	% 	\gamma
+	% 	\preccurlyeq
+	% 	\exp(n^\beta).
+	% \]
+	% for each
+	% \[
+	% 	\beta = \frac{1}{1-\log_2(\alpha)}+\varepsilon
+	% \]
+	% where $\varepsilon > 0$.
+	% 	{\color{red} This lemma is quite well-defined since the above sum is uncountably infinite}
+\end{lemma}
+\begin{myproof}
+Let $\pi(n) = \ln(\gamma(n))$.
+
+We prove by an induction on $n$ that there exists some constants $A \geq 1$ and $\beta\in (0,1)$ such that
+\begin{equation}\label{eq:inductive_hypoth}
+\gamma(n) \leq A n^\beta
+\end{equation}
+for each $n$.
+We begin by selecting sufficient constants $A$ and $\beta$ as follows.
+
+Let $\varepsilon>0$ be a sufficiently small constant such that
+\begin{equation}\label{eq:upper/beta}
+  \beta
+  =
+  \frac{1-\log_k(1-\varepsilon)}{1-\log_k(\alpha)} < 1
+\end{equation}
+For example, the value $\varepsilon = (1-\alpha)/2$ is sufficiently small.
+From this choice of $\beta$, we see that
+\begin{equation}\label{eq:upper/bound}
+  k
+  \left(
+    \frac{\alpha}{k}
+  \right)^\beta
+  = 1-\varepsilon.
+\end{equation}
+This is clear since
+\begin{align*}
+  k
+  \left(
+    \frac{\alpha}{k}
+  \right)^\beta
+  = 1-\varepsilon
+  &\iff
+  k^{1-\beta}
+  \alpha^\beta
+  = 1-\varepsilon
+  \\
+  &\iff
+  (1-\beta)\ln(k) + \beta \ln(\alpha) = \ln(1-\varepsilon)
+  \\
+  &\iff
+  \beta (\ln(\alpha)-\ln(k)) = \ln(1-\varepsilon) -\ln(k)
+  \\
+  &\iff
+\beta = \frac{\ln(k)-\ln(1-\varepsilon)}{\ln(k)-\ln(\alpha)}
+=
+\frac{1-\log_k(1-\varepsilon)}{1-\log_k(\alpha)}.
+\end{align*}
+
+Notice that $n^\beta$ grows faster asymptotically than
+\[
+  \ln(C)+k\ln(\alpha n +1).
+\]
+In particular, we may choose some sufficiently large constant $A \geq 1$ such that
+\begin{equation}\label{eq:upper/A}
+  \ln(C)+k\ln(\alpha n +1) \leq A\varepsilon n^\beta
+\end{equation}
+for each $n\geq 1$
+where $\varepsilon>0$ is as above.
+
+\medskip
+\noindent
+\underline{Base case}:
+We begin by observing that $\pi(0) = \ln(\gamma(0)) = \ln(1)=0 \leq A\cdot 0^\beta$.
+Thus, our statement, given in (\ref{eq:inductive_hypoth}), holds for $n=0$.
+
+\medskip
+\noindent
+\underline{Inductive step}:
+%
+Suppose that $n \geq 1$ and that $\gamma(m) \leq A m^\beta$ for each $m < n$.
+
+Considering the terms of the sum in (\ref{eq:lower_bound}), we see that
+\[
+  \ln(\gamma(n_1)\gamma(n_2)\cdots\gamma(n_k))
+  =
+  \pi(n_1) + \pi(n_2) + \cdots + \pi(n_k)
+  \leq
+  A \left(n_1^\beta + n_2^\beta + \cdots + n_k^\beta\right)
+\]
+Since each $n_i \leq \alpha n < n$.
+We then see that this term would be maximised if each $n_i = \alpha n /k$.
+In particular, we see that
+\[
+  \ln(\gamma(n_1)\gamma(n_2)\cdots\gamma(n_k))
+  \leq
+  A \left(n_1^\beta + n_2^\beta + \cdots + n_k^\beta\right)
+  \leq
+  A k \left(\frac{\alpha n}{k}\right)^\beta
+  =
+  A n^\beta  k \left(\frac{\alpha}{k}\right)^\beta.
+\]
+Then, noticing that the sum in (\ref{eq:lower_bound}) can have at most $(\alpha n+1)^k$ many terms, we see that
+\[
+  \gamma(n)
+  \leq
+  C (\alpha n+1)^k \exp\left(A n^\beta  k \left(\frac{\alpha}{k}\right)^\beta\right).
+\]
+Taking the log of both sides of the above, we find that
+\[
+  \pi(n)
+  \leq
+  \ln(C) + k \ln(\alpha n+1) +A n^\beta  k \left(\frac{\alpha}{k}\right)^\beta. 
+\]
+From (\ref{eq:upper/bound}), we then see that
+\[
+  \pi(n)
+  \leq
+  \ln(C) + k \ln(\alpha n+1) +A n^\beta  (1-\varepsilon) 
+\]
+where $\varepsilon>0$.
+From (\ref{eq:upper/A}), we see that
+\[
+  \pi(n)
+  \leq
+  A n^\beta
+\]
+as desired. This completes our induction.
+
+\medskip
+\noindent
+\underline{Conclusion}:
+%
+We have now proven that $\pi(n) \leq A n^\beta$ for each $n \in \mathbb N$.
+Thus,
+\[
+  \gamma(n) = \exp(\pi(n)) \leq \exp(An^\beta) = \exp(A) \exp(n^\beta)
+\]
+for each $n$.
+Thus, we see that
+\[
+  \gamma(n) \leq M \exp((Mn)^\beta)
+\]
+for each $n \in \mathbb N$ where $M = \exp(A)$.
+Thus, $\gamma \preccurlyeq \exp(n^\beta)$ as desired.
+\end{myproof}
+%
+% \begin{proof}[\normalfont\bfseries Proof.]
+% 	We define the function $f(n) = \log_2(\gamma(n))$.
+%
+% 	In this proof, we will show by an induction that $f(n) \leq A n^\beta$ where
+% 	\[
+% 		\beta = \frac{1}{1-\log_2(\alpha)}
+% 		+\varepsilon
+% 	\]
+% 	with $\varepsilon>0$, and $A = A(\varepsilon)$ sufficiently large (as we define below).
+%
+% 	\medskip
+% 	\noindent
+% 	\textbf{Constants:}
+% 	Before we may begin with our induction, we must define some additional constants and specify the value of $A$.
+% 	We begin by letting $N = N(\varepsilon)\geq L$ be sufficiently large such that
+% 	\begin{equation}\label{eq:tech}
+% 		2\left(\frac{\alpha + L/n}{2}\right)^{\beta-\varepsilon/2} \leq 1
+% 	\end{equation}
+% 	for each $n\geq N$.
+% 	We know that such a constant exists since
+% 	\begin{align*}
+% 		2\left(\frac{\alpha + L/n}{2}\right)^{\beta-\varepsilon/2} \leq 1
+% 		 & \iff
+% 		1 + (\beta-\varepsilon/2)\log_2\left(\frac{\alpha + L/n}{2}\right) \leq 0
+% 		\\
+% 		 & \iff
+% 		1 + (\beta-\varepsilon/2)(\log_2(\alpha + L/n) - 1) \leq 0
+% 		\\
+% 		 & \iff
+% 		\log_2(\alpha + L/n) - 1 \leq -1/(\beta-\varepsilon/2)
+% 		\\
+% 		 & \iff
+% 		\log_2(\alpha + L/n) - 1 \leq \left( \frac{1}{\log_2(\alpha) - 1} - \varepsilon/2 \right)^{-1}
+% 		\\
+% 		 & \iff
+% 		\frac{1}{\log_2(\alpha + L/n) - 1} \geq  \frac{1}{\log_2(\alpha) - 1} - \varepsilon/2.
+% 	\end{align*}
+% 	We thus see that the above is correct for any sufficiently large $n$.
+%
+% 	We then define $A = A(\varepsilon)\geq \gamma(N)$ to be sufficiently large such that
+% 	\begin{equation}\label{eq:tech2}
+% 		\log_2(K) + \log_2(\alpha nM + LM + 1)
+% 		\leq
+% 		A\left(1-2\left(\frac{\alpha+L/n}{2}\right)^{\varepsilon/2}\right)n^\beta
+% 	\end{equation}
+% 	for every $n\geq N$ where  $M = 1/\min\{ \omega(x) \mid x\in X \}$.
+% 	We see that such an $A$ must exist since the left-hand side is logarithmic in $n$ and the right-hand side is polynomial in $n$.
+%
+%
+% 	\medskip\noindent
+% 	\textbf{Induction:}
+% 	We will now prove by induction that $f(n) \leq A n^\beta$ for each $n\geq 0$.
+%
+% 	\medskip
+% 	\noindent
+% 	\textbf{Base case:}
+% 	From our choice of $A$, we see that out inequality holds for each $n \leq N$.
+%
+% 	\medskip
+% 	\noindent
+% 	\textbf{Inductive step:}
+% 	Suppose that our condition is satisfied for values smaller than $n \geq N \geq L$.
+%
+% 	Consider equation (\ref{eq:shrinking-lemma}) as follows:
+% 	\[
+% 		\gamma(n)
+% 		\leq
+% 		K \sum_{\substack{n_1+n_2 \leq \alpha n+L\\n_1,n_2\geq 0}}
+% 		\gamma(n_1) \gamma(n_2).
+% 	\]
+% 	We see that the above sum has at most $\alpha nM + LM + 1$ terms where $M = 1/\min\{ \omega(x) \mid x\in X \}$.
+% 	Moreover, if we consider the terms in the sum, then we see that
+% 	\[
+% 		\log_2(\gamma(n_1) \gamma(n_2))
+% 		=
+% 		\pi(n_1)+\pi(n_2)
+% 		\leq A(n_1^\beta + n_2^\beta)
+% 		\leq A\cdot 2 \left(\frac{\alpha n+L}{2}\right)^\beta.
+% 	\]
+% 	Thus, we may derive
+% 	\begin{equation}\label{lem:eq1}
+% 		\begin{aligned}
+% 			\pi(n)
+% 			 & \leq
+% 			\log_2(K) + \log_2(\alpha nM + LM + 1)
+% 			+ A\cdot2\left(\frac{\alpha n+L}{2}\right)^\beta
+% 			\\
+% 			 & \qquad\qquad=
+% 			\log_2(K) + \log_2(\alpha nM + LM + 1)
+% 			+ An^\beta \cdot2\left(\frac{\alpha+L/n}{2}\right)^\beta.
+% 		\end{aligned}
+% 	\end{equation}
+%
+%
+% 	Combining (\ref{eq:tech}), (\ref{eq:tech2}) and (\ref{lem:eq1}), we find that
+% 	\[
+% 		\pi(n)
+% 		\leq
+% 		\log_2(K) + \log_2(\alpha nM + LM + 1)
+% 		+ An^\beta \cdot2\left(\frac{\alpha+L/n}{2}\right)^{\varepsilon/2}
+% 		\leq
+% 		An^{\beta}
+% 	\]
+% 	as desired.
+%
+% 	\medskip
+% 	\noindent
+% 	\textbf{Conclusion:}
+% 	We have now shown that $\pi(n) = \log_2(\gamma(n)) \leq An^\beta$ for each $n\geq 0$.
+% 	Thus, we have that
+% 	$
+% 		\gamma(n) \leq 2^{n^\beta}
+% 	$ for each
+% 	$n\geq 0$
+% 	and thus
+% 	$
+% 		\gamma \preccurlyeq \exp(n^\beta)
+% 	$
+% 	as desired.
+% \end{proof}
+
+\begin{corollary}\label{cor:upper_bound_tool}
+
+\smallskip
+Let $\gamma\colon \mathbb N \to \mathbb N$ be the volume growth function of a group.
+
+Suppose that there exists constants $k \geq 2$, $\alpha \in (0,1)$, $C\geq 1$ and $q \geq 0$ such that
+\begin{equation}\label{eq:lower_bound2}
+  \gamma(n)
+  \leq
+  C
+  \sum_{\substack{n_1,n_2,\ldots,n_k\in \mathbb{N}\\n_1+n_2+\cdots+n_k \leq \alpha n+q}}
+  \gamma(n_1) \gamma(n_2)\cdots \gamma(n_k).
+\end{equation}
+Then, there exists some $\beta\in (0,1)$ such that
+\[
+  \gamma \preccurlyeq \exp(n^\beta).
+\]
+That is, the growth function grows slower than exponential.
+\end{corollary}
+
+\begin{myproof}
+From \cref{ex:submulti}, we see that
+\[
+  \gamma(n+\lceil q /\alpha\rceil) \leq \gamma(\lceil q/\alpha\rceil) \gamma(n)
+\]
+for each $n \geq 0$.
+
+Thus,
+\begin{align*}
+  \gamma(n+\lceil q /\alpha\rceil)
+  &\leq
+  \gamma(\lceil q/\alpha\rceil) C
+  \sum_{\substack{n_1,n_2,\ldots,n_k\in \mathbb{N}\\n_1+n_2+\cdots+n_k \leq \alpha n+q}}
+  \gamma(n_1) \gamma(n_2)\cdots \gamma(n_k)
+  \\
+  &\leq
+  \gamma(\lceil q/\alpha\rceil) C
+  \sum_{\substack{n_1,n_2,\ldots,n_k\in \mathbb{N}\\n_1+n_2+\cdots+n_k \leq \alpha (n+\lceil q/\alpha \rceil)}}
+  \gamma(n_1) \gamma(n_2)\cdots \gamma(n_k).
+\end{align*}
+
+Hence, with $C' = \gamma(\lceil q/\alpha\rceil) C$, we see that
+\[
+  \gamma(n)
+  \leq
+  C'\sum_{\substack{n_1,n_2,\ldots,n_k\in \mathbb{N}\\n_1+n_2+\cdots+n_k \leq \alpha n}}
+  \gamma(n_1) \gamma(n_2)\cdots \gamma(n_k)
+\]
+for each $n \in \mathbb N$.
+Our result now follows from \cref{lem:upperbound1}.
+\end{myproof}
+
+\section{Properties of Grigorchuk Group}
+
+% \subsection{Self-similarity}
+%
+% We notice here that the stabiliser of the first level is contained completely in $G\times G$.
+%
+% From this, we may define the map $\phi_0\colon \mathrm{Stab}(1)\to G$ and show that $G = \phi_0(\mathrm{Stab}(1))$.
+% Thus, $\mathrm{Stab}(1)$ is a proper subgroup which has an onto homomophism to $G$.
+% Thus, $G$ cannot be finite (this would not be possible if $G$ we finite.)
+%
+% From this, we may show that the growth function of Grigorchuk's group must be strictly increasing.
+% As otherwise, we would have a finite group.
+
+\subsection{Subgroup B}
+
+Let $B = \left\langle b\right\rangle^{\mathbb G}$ be the smallest normal subgroup of Grigorchuk's groups which contains the element $b$.
+We then see that
+\begin{align*}
+  \mathbb G/B
+  &=
+  \left\langle
+    a,b,d
+  \mid
+    b = 1, a^2=b^2=d^2=1, (ad)^{4}=1, \ldots
+  \right\rangle
+  \\
+  &=
+  \left\langle
+    a,d
+  \mid
+    a^2=d^2=1, (ad)^{4}=1, \ldots
+  \right\rangle
+  \\
+  &=
+  \left\langle
+    a,d
+  \mid
+    a^2=d^2=(ad)^4=1,\ldots
+  \right\rangle.
+\end{align*}
+We then notice that
+\[
+  D_{4}= 
+  \left\langle
+    a,d
+  \mid
+    a^2=d^2=(ad)^4=1
+  \right\rangle
+\]
+Has a surjection onto the quotient $D_4\to \mathbb G/B$ and thus $\mathbb G/B$ can contain at most $8$ element.
+Thus, we see that $B$ is finite index in the group $\mathbb G$ and hence has equivalent growth.
+
+\begin{lemma}[Proposition on p.~227 of~\cite{Pierre2000}]
+  The subgroup $B$ is generated as 
+  \[
+    B
+    =
+    \left\langle
+      b,aba,(bada)^2,(abad)^2
+    \right\rangle.
+  \]
+  Moreoever, $[\mathbb G:B]=8$ and thus $\mathbb G/B = D_4$.
+\end{lemma}
+
+\begin{definition}
+  We define the homomorphism $\Psi\colon \mathrm{Stab}_{\mathbb G}(1) \to \mathbb G\times \mathbb G$
+  such that
+  \[
+    \Psi(g)
+    =
+    (g|_0,g|_1).
+  \]
+  We then notice that $\Psi$ is an isomophism since any element $g \in \mathrm{Stab}_{\mathbb G}(1)$ is completely determined by
+  its action on its first-level subtrees.
+\end{definition}
+
+\begin{lemma}\label{lem:BBsubgroup}
+  $B \times B \subseteq \Psi(\mathrm{Stab}_{\mathbb G}(1))$.
+\end{lemma}
+
+\begin{myproof}
+We first notice that $(1,b) = \Psi(d) \in \Psi(\mathrm{Stab}_{\mathbb G}(1))$.
+
+Now suppose that $(1,g) \in \Psi(h)$ where $g\in G$ and $h\in \mathrm{Stab}_{\mathbb G}(1)$.
+Then,
+\begin{align*}
+  (1,aga)
+  &=
+  \Psi(aba) \Psi(h) \Psi(aba)
+  =
+  \Psi(abahaba)
+&
+  (1,bgb)
+  &=
+  \Psi(d) \Psi(h) \Psi(d)
+  =
+  \Psi(dhd)
+\\
+  (1,cgc)
+  &=
+  \Psi(b) \Psi(h) \Psi(b)
+  =
+  \Psi(bhb)
+&
+  (1,dgd)
+  &=
+  \Psi(b) \Psi(h) \Psi(b)
+  =
+  \Psi(bhb).
+\end{align*}
+Thus, we see that $(1,xbx^{-1}) \in \Psi(\mathrm{Stab}_{\mathbb G}(1))$ for each $x\in G$.
+Noticing that the set of all such elements generates the group $B$, we see that
+\[
+  \{1\}\times B \subset \Psi(\mathrm{Stab}_{\mathbb G}(1)).
+\]
+Moreover, for each such element
+$
+  (1,x) = \Psi(h),
+$
+we see that
+$
+  (x,1) = \Psi(aha),
+$
+and thus
+\[
+  B\times \{1\} \subset \Psi(\mathrm{Stab}_{\mathbb G}(1)).
+\]
+Hence, $B\times B \subseteq \Psi(\mathrm{Stab}_{\mathbb G}(1))$.
+\end{myproof}
+
+\begin{corollary}\label{cor:Gcong}
+  We then see that $\mathbb G \cong \mathbb G\times \mathbb G$.
+\end{corollary}
+
+\begin{myproof}
+Notice that $B \times B$ is finite index in $\mathbb G \times \mathbb G$, in fact,
+\[
+  (\mathbb G\times \mathbb G)/ (B \times B) = D_4 \times D_4
+\]
+which is a finite group of size $8^2$.
+
+Since $\Psi$ is an isomorphism and $\mathrm{Stab}_{\mathbb G}(1)$ is finite index in $\mathbb G$, we see that
+\[
+  \mathbb G \cong \mathrm{Stab}_{\mathbb G}(1)\cong \Psi(\mathrm{Stab}_{\mathbb G}(1)).
+\]
+Moreover, from \cref{lem:BBsubgroup} we see that
+\[
+  B\times B \subseteq \Psi(\mathrm{Stab}_{\mathbb G}(1)) \subseteq \mathbb G \times \mathbb G.
+\]
+Since $B \times B$ is finite index in $\mathbb G \times \mathbb G$, then 
+$\Psi(\mathrm{Stab}_{\mathbb G}(1))$ is also finite index in $\mathbb G\times \mathbb G$, and thus,
+\[
+  \mathbb G \cong \Psi(\mathrm{Stab}_{\mathbb G}(1)) \cong \mathbb G \times \mathbb G.
+\]
+Thus, we have our desired result.
+\end{myproof}
+
+\begin{corollary}\label{cor:lower_bound}
+  There exists some $\alpha>0$ such that
+  \[
+    \exp(n^\alpha) \preccurlyeq \gamma
+  \]
+  where $\gamma$ is the volume growth function for Grigorchuk group.
+  That is, the Grigorchuk group does not have polynomial growth.
+\end{corollary}
+
+\begin{myproof}
+  This follows from \cref{cor:Gcong,lem:lower_bound}.
+\end{myproof}
+
+\subsection{Length reduction}
+
+The Grigorchuk group offers length reduction up to a factor of $3/4$ as specified in the following lemma.
+
+\begin{lemma}\label{lem:alternating_form}
+  If $w \in \{a,b,c,d\}^*$ is a geodesic for some element $g\in \mathbb G$, then
+  \[
+    w = 
+    x a y_1 a y_2 a y_3 a\cdots a y_k a x'
+  \]
+  where $k \geq 0$, $x,x' \in \{1,b,c,d\}$ and each $y_i\in \{b,c,d\}$.
+\end{lemma}
+\begin{myproof}
+  Notice that if $w$ is not in the form described above, then $w$ must contain some subword of the form $aa$ or $st$ where $st\in \{b,c,d\}$.
+  In both of these cases, we may perform some cancellation which reduces the length of the word $w$.
+  This would then contradict $w$ being a geodesic.
+\end{myproof}
+
+
+\begin{lemma}[Lemma 10.14 in \cite{Mann}]\label{lem:34red}
+  For each $g\in \mathbb G$, we have
+  \[
+    \sum_{i,j,k\in \Sigma}
+    \ell_X(g|_{ijk})
+    \leq
+    \frac{3}{4}
+    \ell_X(g) + 8.
+  \]
+\end{lemma}
+
+\begin{corollary}\label{cor:upper_bound}
+  There exists some $\beta < 1$ such that
+  \[
+    \gamma \preccurlyeq \exp(n^\beta)
+  \]
+  where $\gamma$ is the volume growth function for Grigorchuk's group.
+  That is, the Grigorchuk group does not have exponential growth.
+\end{corollary}
+
+\begin{myproof}
+  From \cref{lem:34red}, we see that
+  \[
+    \gamma(n)
+    \leq
+    C
+    \sum_{\substack{n_1,n_2,\ldots,n_8\in \mathbb N\\ n_1 + n_2 + \cdots +n_8 \leq (3/4)n+8}}
+    \gamma(n_1)\gamma(n_2)\cdots \gamma(n_8)
+  \]
+  where each $n_i$ is the length of some restriction $g|_{ijk}$ of some word $g\in \mathbb G$ with $\ell(g)\leq n$,
+  and $C = 2^{1+2+4}$ is the number of permuations of the first 3 levels of the tree.
+
+  From \cref{lem:upperbound1}, we then have our desired upper bound.
+\end{myproof}
+
+\ThmMain
+
+\begin{myproof}
+  This follows from \cref{cor:upper_bound,cor:lower_bound}.
+\end{myproof}
+
+\begin{remark}
+  Using a more careful version of the argument in \cref{thm:main}, Grigorchuk showed in \cite[Theorem B]{GrigrochukInter}
+  \[
+    \exp(\sqrt{n})
+    \preccurlyeq
+    \gamma
+    \preccurlyeq
+    \exp(n^{\log_{32}(31)})
+  \]
+  where $\gamma$ is the volume growth function for Grigorchuk's group.
+
+  \medskip
+
+  Notice here that $\log_{32}(31) = 0.99083926...$\,.
+\end{remark}
+
+\begin{remark}
+  The best known bound on the volume growth of Grigorchuk group was proven in~\cite{Erschler2019} where it was shown that
+  \[
+    \lim_{n\to\infty} \frac{\ln\ln\gamma(n)}{\ln(n)}
+    =
+    \frac{1}{\log_2(\alpha)}
+  \]
+  where $\alpha$ is the positive real root of $X^2-X^2-2X-4$.
+  In particular, this means
+  \[
+    \exp\left(n^{1/\log_2(\alpha) - \varepsilon}\right)
+    \preccurlyeq
+    \gamma
+    \preccurlyeq
+    \exp\left(n^{1/\log_2(\alpha) + \varepsilon}\right)
+  \] for each constant $\varepsilon>0$.
+  Notice here that $1/\log_2(\alpha) \approx 0.7674$.
+\end{remark}
+
+
+\printbibliography
+\end{document}
